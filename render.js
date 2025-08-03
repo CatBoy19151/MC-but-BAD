@@ -3,8 +3,6 @@
   const ctx = canvas.getContext('2d');
 
   let keys = {};
-  let mouseX = 0;
-  let mouseY = 0;
   let selectedIndex = 0;
 
   // Simple textures as colors for blocks
@@ -17,22 +15,6 @@
     6: '#8B4513', // wood
     7: '#228822', // leaves
   };
-
-  function pixelToBlock(x, y, cameraX) {
-    return {
-      x: Math.floor((x + cameraX) / window.TILE_SIZE),
-      y: Math.floor(y / window.TILE_SIZE),
-    };
-  }
-
-  function aabbCollision(a, b) {
-    return (
-      a.x < b.x + b.width &&
-      a.x + a.width > b.x &&
-      a.y < b.y + b.height &&
-      a.y + a.height > b.y
-    );
-  }
 
   function updateHealthBar() {
     const healthBar = document.getElementById('healthBar');
@@ -85,12 +67,22 @@
     return window.player.x - canvas.width / 2 + window.player.width / 2;
   }
 
+  function aabbCollision(a, b) {
+    return (
+      a.x < b.x + b.width &&
+      a.x + a.width > b.x &&
+      a.y < b.y + b.height &&
+      a.y + a.height > b.y
+    );
+  }
+
   function gameLoop() {
     const cameraX = getCameraX();
     const cameraY = 0;
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+    // Generate surrounding chunks
     const playerChunk = Math.floor(window.player.x / window.TILE_SIZE / window.CHUNK_SIZE);
     for (let i = playerChunk - 3; i <= playerChunk + 3; i++) {
       if (!window.world.has(i * window.CHUNK_SIZE)) window.generateChunk(i);
@@ -127,6 +119,7 @@
     }
 
     updateHealthBar();
+    updateInventoryUI();
 
     // Draw player
     ctx.fillStyle = '#ff0000';
@@ -144,5 +137,11 @@
   window.addEventListener('keydown', e => {
     keys[e.key.toLowerCase()] = true;
   });
+
   window.addEventListener('keyup', e => {
-    keys[e.key.toLowerCase()] = false
+    keys[e.key.toLowerCase()] = false;
+  });
+
+  // Start game
+  gameLoop();
+})();
